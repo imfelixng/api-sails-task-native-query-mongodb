@@ -1,5 +1,5 @@
 {
-  "name": "api-sails",
+  "name": "api-sails-native-query",
   "private": true,
   "version": "0.0.0",
   "description": "a Sails application",

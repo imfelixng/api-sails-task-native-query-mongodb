@@ -4,12 +4,13 @@
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
-
+let db = Task.getDatastore().manager;
+let ObjectID = Task.getDatastore().driver.mongodb.ObjectID;
 module.exports = {
   
     getTasks: async (req, res) => {
         try {
-            let tasks = await Task.find({});
+            let tasks = await db.collection('task').find({}).toArray();
             return res.status(200).send(tasks);
         } catch (error) {
             return res.status(500).send({success: false, error});
@@ -17,8 +18,9 @@ module.exports = {
     },
     getTask: async (req, res) => {
         let id = req.params.id;
+        let taskID = new ObjectID(id);
         try {
-            let task = await Task.findOne({id});
+            let task = await db.collection('task').findOne({_id: taskID});
             return res.status(200).send(task);
         } catch (error) {
             return res.status(500).send({success: false, error});
@@ -28,11 +30,10 @@ module.exports = {
     createTask: async (req, res) => {
         let text = req.body.text;
         try {
-            let taskCreate = await Task.create({text, status: false}).fetch();
+            await db.collection('task').insertOne({text, status: false});
             return res.status(200).send({
                 success: true,
                 message: 'Task created',
-                taskCreate
             });
         } catch (error) {
             return res.status(500).send({success: false, error});
@@ -42,12 +43,12 @@ module.exports = {
     updateTask: async (req, res) => {
         let text = req.body.text;
         let id = req.params.id;
+        let taskID = new ObjectID(id);
         try {
-            let taskUpdate = await Task.update({id}).set({text}).fetch();
+            await db.collection('task').updateOne({_id: taskID},{text});
             return res.send({
                 success: true,
-                message: 'Task created',
-                taskUpdate
+                message: 'Task updated',
             });
         } catch (error) {
             return res.status(500).send({success: false, error});
@@ -55,13 +56,12 @@ module.exports = {
     },
     deleteTask: async(req, res) => {
         let id = req.params.id;
-
+        let taskID = new ObjectID(id);
         try {
-            let taskDelete = await Task.destroy({id}).fetch();
+            await db.collection('task').deleteOne({_id: taskID});
             return res.send({
                 success: true,
-                message: 'Task delete',
-                taskDelete
+                message: 'Task deleted',
             });
         } catch (error) {
             return res.status(500).send({success: false, error});
